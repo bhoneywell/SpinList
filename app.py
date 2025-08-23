@@ -1,6 +1,21 @@
+# --- Begin logic for pulling 2025 albums from playlists ---
+from datetime import datetime
+import streamlit as st
+import pandas as pd
+# Import the DataFrame generator from spotipy_popularity
+from spotipy_popularity import get_albums_with_popularity_and_lastfm_df, add_composite_score
+import streamlit as st
+
+# Cache the DataFrame for 1 day to speed up the app
+@st.cache_data(ttl=86400)
+def cached_album_dataframe():
+    return get_albums_with_popularity_and_lastfm_df()
+# Helper function to display album rating
 def rating_bar(score: int, label="Composite Score"):
-    # Clamp between 0 and 100
-    score = max(0, min(int(score), 100)) if score is not None else 0
+    # Clamp between 0 and 100, handle None and NaN
+    if score is None or pd.isna(score):
+        score = 0
+    score = max(0, min(int(score), 100))
     st.markdown(f"""
     <div style="margin-bottom: 10px;">
         <div style="font-size: 14px; color: #ccc; margin-bottom: 4px;">{label}</div>
@@ -21,25 +36,15 @@ def rating_bar(score: int, label="Composite Score"):
     </div>
     """, unsafe_allow_html=True)
 
-
-
-
-# --- Begin logic for pulling 2025 albums from playlists ---
-from datetime import datetime
-import streamlit as st
-# Import the DataFrame generator from spotipy_popularity
-from spotipy_popularity import get_albums_with_popularity_and_lastfm_df, add_composite_score
-# --- End logic ---
-
 def main():
-    st.title("2025 Spotify Albums Grid (from Playlists)")
-    st.write("Browse 2025 albums pulled from selected Spotify playlists.")
+    st.title("2025 R&B Albums")
+    st.write("Browse 2025 R&B albums pulled from selected Spotify playlists.")
 
 
     # Show progress messages for each step
     status = st.empty()
     status.info("Fetching albums from Spotify playlists...")
-    df = get_albums_with_popularity_and_lastfm_df()
+    df = cached_album_dataframe()
     status.info("Calculating composite scores...")
     df = add_composite_score(df)
     status.success("All data loaded!")
