@@ -35,9 +35,14 @@ def main():
     st.title("2025 Spotify Albums Grid (from Playlists)")
     st.write("Browse 2025 albums pulled from selected Spotify playlists.")
 
-    # Get the DataFrame with all data and composite score
+
+    # Show progress messages for each step
+    status = st.empty()
+    status.info("Fetching albums from Spotify playlists...")
     df = get_albums_with_popularity_and_lastfm_df()
+    status.info("Calculating composite scores...")
     df = add_composite_score(df)
+    status.success("All data loaded!")
 
     # Defensive: parse release date
     def parse_release_date(row):
