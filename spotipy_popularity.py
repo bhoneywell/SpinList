@@ -46,12 +46,18 @@ def get_days_since_release(row):
 # Add composite score to DataFrame
 def add_composite_score(df):
     df['days_since_release'] = df.apply(get_days_since_release, axis=1)
-    df['listeners_per_day'] = df.apply(lambda row: row['lastfm_listeners'] / row['days_since_release'] if row['lastfm_listeners'] is not None else None, axis=1)
-    df['playcount_per_day'] = df.apply(lambda row: row['lastfm_playcount'] / row['days_since_release'] if row['lastfm_playcount'] is not None else None, axis=1)
-    min_listeners = df['listeners_per_day'].min(skipna=True)
-    max_listeners = df['listeners_per_day'].max(skipna=True)
-    min_playcount = df['playcount_per_day'].min(skipna=True)
-    max_playcount = df['playcount_per_day'].max(skipna=True)
+    # Normalize listeners and playcount by days since release and number of tracks
+    def safe_div(x, y):
+        try:
+            return x / y if x is not None and y and y > 0 else None
+        except Exception:
+            return None
+    df['listeners_per_day_per_track'] = df.apply(lambda row: safe_div(safe_div(row['lastfm_listeners'], row['days_since_release']), row.get('total_tracks')), axis=1)
+    df['playcount_per_day_per_track'] = df.apply(lambda row: safe_div(safe_div(row['lastfm_playcount'], row['days_since_release']), row.get('total_tracks')), axis=1)
+    min_listeners = df['listeners_per_day_per_track'].min(skipna=True)
+    max_listeners = df['listeners_per_day_per_track'].max(skipna=True)
+    min_playcount = df['playcount_per_day_per_track'].min(skipna=True)
+    max_playcount = df['playcount_per_day_per_track'].max(skipna=True)
     df['composite_score'] = df.apply(
         lambda row: compute_album_score(
             row.get('popularity'),

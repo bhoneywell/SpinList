@@ -77,26 +77,54 @@ def main():
     elif sort_by == "Composite Score":
         filtered_df = filtered_df.sort_values("composite_score", ascending=False)
 
-    # Grid view (4 per row)
-    for i in range(0, len(filtered_df), 4):
-        cols = st.columns(4)
-        for j, (_, album) in enumerate(filtered_df.iloc[i:i+4].iterrows()):
-            with cols[j]:
-                name = album["name"]
-                artists = ", ".join(album["artists"])
-                release_date = album["release_date"]
-                url = album["external_url"]
-                image_url = album.get("image_url")
-                album_type = album.get("album_type", "unknown")
-                composite_score = album.get("composite_score")
-                if image_url:
-                    st.image(image_url, width=180)
-                st.markdown(f"**[{name}]({url})**")
-                st.markdown(f"*{artists}*")
-                st.markdown(f"Released: {release_date}")
-                st.markdown(f"Type: {album_type}")
-                if composite_score is not None:
-                    rating_bar(composite_score, label="Composite Score")
+
+    # Separate singles and albums
+    singles_df = filtered_df[filtered_df['album_type'] == 'single']
+    albums_df = filtered_df[filtered_df['album_type'] == 'album']
+
+    if not albums_df.empty:
+        st.header("Albums")
+        for i in range(0, len(albums_df), 4):
+            cols = st.columns(4)
+            for j, (_, album) in enumerate(albums_df.iloc[i:i+4].iterrows()):
+                with cols[j]:
+                    name = album["name"]
+                    artists = ", ".join(album["artists"])
+                    release_date = album["release_date"]
+                    url = album["external_url"]
+                    image_url = album.get("image_url")
+                    album_type = album.get("album_type", "unknown")
+                    composite_score = album.get("composite_score")
+                    if image_url:
+                        st.image(image_url, width=180)
+                    st.markdown(f"**[{name}]({url})**")
+                    st.markdown(f"*{artists}*")
+                    st.markdown(f"Released: {release_date}")
+                    st.markdown(f"Type: {album_type}")
+                    if composite_score is not None:
+                        rating_bar(composite_score, label="Composite Score")
+
+    if not singles_df.empty:
+        st.header("Singles")
+        for i in range(0, len(singles_df), 4):
+            cols = st.columns(4)
+            for j, (_, album) in enumerate(singles_df.iloc[i:i+4].iterrows()):
+                with cols[j]:
+                    name = album["name"]
+                    artists = ", ".join(album["artists"])
+                    release_date = album["release_date"]
+                    url = album["external_url"]
+                    image_url = album.get("image_url")
+                    album_type = album.get("album_type", "unknown")
+                    composite_score = album.get("composite_score")
+                    if image_url:
+                        st.image(image_url, width=180)
+                    st.markdown(f"**[{name}]({url})**")
+                    st.markdown(f"*{artists}*")
+                    st.markdown(f"Released: {release_date}")
+                    st.markdown(f"Type: {album_type}")
+                    if composite_score is not None:
+                        rating_bar(composite_score, label="Composite Score")
 
 if __name__ == '__main__':
     main()
