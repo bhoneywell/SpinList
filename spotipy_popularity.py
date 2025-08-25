@@ -25,9 +25,9 @@ def compute_album_score(popularity, listeners, playcount,
     norm_listeners = normalize(listeners_per_day, min_listeners, max_listeners) if listeners_per_day is not None else 0
     norm_playcount = normalize(playcount_per_day, min_playcount, max_playcount) if playcount_per_day is not None else 0
     score = (
-        0.5 * norm_popularity +
+        0.3 * norm_popularity +
         0.3 * norm_listeners +
-        0.2 * norm_playcount
+        0.4 * norm_playcount
     )
     return round(score * 100, 2)  # Optional: scale to 0–100
 
