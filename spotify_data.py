@@ -9,7 +9,7 @@ import time
 CLIENT_ID = st.secrets["spotify"]["client_id"]
 CLIENT_SECRET = st.secrets["spotify"]["client_secret"]
 API_KEY = st.secrets["lastfm"]["api_key"]
-PLAYLIST_IDS = ['4Bop6Q5jk57ULKkcbC5i8b','7Lo6reW7mdip1PPmxNuxe7']
+PLAYLIST_IDS = ['4Bop6Q5jk57ULKkcbC5i8b',"6UHRVaBG2gTnO76pAyjkHl"]
 TOKEN_URL = 'https://accounts.spotify.com/api/token'
 BASE_URL = 'https://api.spotify.com/v1'
 
