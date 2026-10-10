@@ -5,6 +5,7 @@ Logic for pulling album data from Spotify (access token, playlist tracks, etc).
 import requests
 import streamlit as st
 import time
+from datetime import datetime
 
 CLIENT_ID = st.secrets["spotify"]["client_id"]
 CLIENT_SECRET = st.secrets["spotify"]["client_secret"]
@@ -21,6 +22,31 @@ def get_access_token(client_id, client_secret):
     )
     response.raise_for_status()
     return response.json()['access_token']
+
+def get_release_window(today=None):
+    today = today or datetime.today()
+    if today.month <= 6:
+        start_date = datetime(today.year - 1, 7, 1)
+        label = f"July {today.year - 1}-present"
+    else:
+        start_date = datetime(today.year, 1, 1)
+        label = str(today.year)
+    return start_date, label
+
+def parse_spotify_release_date(release_date):
+    for fmt in ("%Y-%m-%d", "%Y-%m", "%Y"):
+        try:
+            return datetime.strptime(release_date, fmt)
+        except (TypeError, ValueError):
+            continue
+    return None
+
+def release_date_in_window(release_date, start_date, end_date=None):
+    parsed_release_date = parse_spotify_release_date(release_date)
+    if parsed_release_date is None:
+        return False
+    end_date = end_date or datetime.today()
+    return start_date <= parsed_release_date <= end_date
 
 def get_playlist_tracks(playlist_id, access_token):
     headers = {'Authorization': f'Bearer {access_token}'}
@@ -58,7 +84,7 @@ def get_playlist_tracks(playlist_id, access_token):
         return []
     return list(albums.values())
 
-def fetch_albums_2025_from_playlists():
+def fetch_albums_from_playlists():
     access_token = get_access_token(CLIENT_ID, CLIENT_SECRET)
     all_albums = {}
     for pid in PLAYLIST_IDS:
@@ -67,8 +93,14 @@ def fetch_albums_2025_from_playlists():
             album_id = album['external_url'].split('/')[-1]
             if album_id not in all_albums:
                 all_albums[album_id] = album
-    albums_2025 = [album for album in all_albums.values() if album['release_date'].startswith('2025')]
-    return albums_2025
+    start_date, _ = get_release_window()
+    return [
+        album for album in all_albums.values()
+        if release_date_in_window(album['release_date'], start_date)
+    ]
+
+def fetch_albums_2025_from_playlists():
+    return fetch_albums_from_playlists()
 
 def get_album_popularity(albums, access_token):
     """
@@ -127,4 +159,3 @@ def get_lastfm_album_stats(albums):
             album['lastfm_playcount'] = None
         time.sleep(0.25)  # Be gentle to the API
     return albums
-

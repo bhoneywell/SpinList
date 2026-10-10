@@ -1,9 +1,9 @@
-# --- Begin logic for pulling 2025 albums from playlists ---
 from datetime import datetime
 import streamlit as st
 import pandas as pd
 # Import the DataFrame generator from spotipy_popularity
 from spotipy_popularity import get_albums_with_popularity_and_lastfm_df, add_composite_score
+from spotify_data import get_release_window, parse_spotify_release_date
 import streamlit as st
 
 # Cache the DataFrame for 1 day to speed up the app
@@ -37,8 +37,9 @@ def rating_bar(score: int, label="Composite Score"):
     """, unsafe_allow_html=True)
 
 def main():
-    st.title("2025 R&B Albums")
-    st.write("Browse 2025 R&B albums pulled from selected Spotify playlists.")
+    _, release_window_label = get_release_window()
+    st.title(f"{release_window_label} R&B Albums")
+    st.write(f"Browse R&B albums and singles released in {release_window_label}, pulled from selected Spotify playlists.")
 
 
     # Show progress messages for each step
@@ -51,12 +52,7 @@ def main():
 
     # Defensive: parse release date
     def parse_release_date(row):
-        for fmt in ("%Y-%m-%d", "%Y-%m", "%Y"):
-            try:
-                return datetime.strptime(row["release_date"], fmt)
-            except:
-                continue
-        return datetime(2025, 1, 1)
+        return parse_spotify_release_date(row["release_date"]) or datetime.today()
     df["release_date_obj"] = df.apply(parse_release_date, axis=1)
 
     album_types = sorted(df['album_type'].dropna().unique())

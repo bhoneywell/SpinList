@@ -1,6 +1,8 @@
-# SpinList: 2025 Spotify Albums & Singles Explorer
+# SpinList: Current Spotify Albums & Singles Explorer
 
-SpinList is a Streamlit web app that pulls albums and singles released in 2025 from selected Spotify playlists, enriches them with popularity and listener data from Spotify and Last.fm, and displays them in a sortable, filterable grid. The app computes a composite score for each release, making it easy to compare albums and singles side by side.
+SpinList is a Streamlit web app that pulls current albums and singles from selected Spotify playlists, enriches them with popularity and listener data from Spotify and Last.fm, and displays them in a sortable, filterable grid. The app computes a composite score for each release, making it easy to compare albums and singles side by side.
+
+**Live app:** [https://spinlist.streamlit.app/](https://spinlist.streamlit.app/)
 
 # Background
 
@@ -18,7 +20,9 @@ I created SpinList because I wanted a simple way to keep track of album releases
 ## How it Works
 1. **Fetches Data:**
    - Pulls tracks from specified Spotify playlists.
-   - Extracts unique albums and singles released in 2025.
+   - Extracts unique albums and singles from the current release window.
+   - From January through June, includes releases from July 1 of the previous year through the current year so early-year views are not sparse.
+   - From July through December, includes releases from January 1 of the current year onward.
 2. **Enriches Data:**
    - Fetches Spotify popularity for each album/single.
    - Fetches Last.fm listeners and playcount for each album/single.

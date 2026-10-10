@@ -70,10 +70,10 @@ def add_composite_score(df):
     return df
 
 import pandas as pd
-from spotify_data import fetch_albums_2025_from_playlists, get_access_token, get_album_popularity, get_lastfm_album_stats, CLIENT_ID, CLIENT_SECRET
+from spotify_data import fetch_albums_from_playlists, get_access_token, get_album_popularity, get_lastfm_album_stats, CLIENT_ID, CLIENT_SECRET
 
 def get_albums_with_popularity_and_lastfm_df():
-    albums = fetch_albums_2025_from_playlists()
+    albums = fetch_albums_from_playlists()
     access_token = get_access_token(CLIENT_ID, CLIENT_SECRET)
     albums = get_album_popularity(albums, access_token)
     albums = get_lastfm_album_stats(albums)
