@@ -2,28 +2,13 @@
 Script to pull album data returned from spotify_data.py and derive a composite score
 """
 
-def normalize(value, min_val, max_val):
-    return (value - min_val) / (max_val - min_val) if max_val != min_val else 0
-
 from datetime import datetime
 
 
-def compute_album_score(popularity, listeners, playcount,
-                        min_listeners, max_listeners,
-                        min_playcount, max_playcount,
-                        days_since_release=None):
+def compute_album_score(popularity, listener_percentile, playcount_percentile):
     norm_popularity = popularity / 100 if popularity is not None else 0  # Already 0–100 from Spotify
-    # If days_since_release is available and > 0, normalize listeners and playcount per day
-    if listeners is not None and days_since_release and days_since_release > 0:
-        listeners_per_day = listeners / days_since_release
-    else:
-        listeners_per_day = listeners
-    if playcount is not None and days_since_release and days_since_release > 0:
-        playcount_per_day = playcount / days_since_release
-    else:
-        playcount_per_day = playcount
-    norm_listeners = normalize(listeners_per_day, min_listeners, max_listeners) if listeners_per_day is not None else 0
-    norm_playcount = normalize(playcount_per_day, min_playcount, max_playcount) if playcount_per_day is not None else 0
+    norm_listeners = listener_percentile if listener_percentile is not None else 0
+    norm_playcount = playcount_percentile if playcount_percentile is not None else 0
     score = (
         0.3 * norm_popularity +
         0.3 * norm_listeners +
@@ -54,18 +39,13 @@ def add_composite_score(df):
             return None
     df['listeners_per_day_per_track'] = df.apply(lambda row: safe_div(safe_div(row['lastfm_listeners'], row['days_since_release']), row.get('total_tracks')), axis=1)
     df['playcount_per_day_per_track'] = df.apply(lambda row: safe_div(safe_div(row['lastfm_playcount'], row['days_since_release']), row.get('total_tracks')), axis=1)
-    min_listeners = df['listeners_per_day_per_track'].min(skipna=True)
-    max_listeners = df['listeners_per_day_per_track'].max(skipna=True)
-    min_playcount = df['playcount_per_day_per_track'].min(skipna=True)
-    max_playcount = df['playcount_per_day_per_track'].max(skipna=True)
+    df['listener_percentile'] = df['listeners_per_day_per_track'].rank(pct=True).fillna(0)
+    df['playcount_percentile'] = df['playcount_per_day_per_track'].rank(pct=True).fillna(0)
     df['composite_score'] = df.apply(
         lambda row: compute_album_score(
             row.get('popularity'),
-            row.get('lastfm_listeners'),
-            row.get('lastfm_playcount'),
-            min_listeners, max_listeners,
-            min_playcount, max_playcount,
-            row.get('days_since_release')
+            row.get('listener_percentile'),
+            row.get('playcount_percentile')
         ), axis=1)
     return df
 
